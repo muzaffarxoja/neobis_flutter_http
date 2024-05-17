@@ -11,8 +11,10 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  late User user;
-  late List<User> users;
+  // late User user;
+  List<User> users = [];
+
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -22,23 +24,17 @@ class _HomeState extends State<Home> {
 
   //static
   void getDate() async {
-    final Response response;
+    final response =
+        await Dio().get('https://jsonplaceholder.typicode.com/posts');
+    if (response.statusCode == 200) {
+      users =
+          (response.data as List<dynamic>).map((i) => User.fromMap(i)).toList();
 
-    try {
-      response = await Dio().get('https://jsonplaceholder.typicode.com/posts');
-      if (response.statusCode == 200) {
-        users = (json.decode(response.data) as List)
-            .map((i) => User.fromJson(i))
-            .toList();
-
-        setState(() {
-          user = User.fromJson(response.data);
-        });
-      } else {
-        print(response.statusCode);
-      }
-    } catch (e) {
-      print(e);
+      setState(() {
+        _isLoading = false;
+      });
+    } else {
+      print(response.statusCode);
     }
   }
 
@@ -46,18 +42,23 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: ListView.builder(
-          itemCount: users.length,
-          itemBuilder: (context, index) {
-            return Card(
-              child: ListTile(
-                title: Text(
-                    'id is ${users[index].id} userId is ${users[index].userId}  / title is ${users[index].title}'),
-                subtitle: Text('body is ${users[index].body}'),
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView.builder(
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: ListTile(
+                      title: Text(
+                        'id is ${users[index].id} userId is ${users[index].userId}  / title is ${users[index].title}',
+                      ),
+                      subtitle: Text('body is ${users[index].body}'),
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
       ),
     );
   }

@@ -1,8 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:neobis_project_http/pages/home.dart';
 
 void main() {
-  runApp(const MyApp());
+  runZonedGuarded(
+    () => runApp(const MyApp()),
+    (error, stack) {
+      print('runZonedGuarded: Caught error in my root zone.');
+      print(error);
+      print(stack);
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {
