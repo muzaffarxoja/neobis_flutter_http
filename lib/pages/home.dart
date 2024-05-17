@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'dart:convert';
 import 'package:neobis_project_http/models/details.dart';
 
 class Home extends StatefulWidget {
@@ -10,9 +11,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  var jsonList;
-
   late User user;
+  late List<User> users;
 
   @override
   void initState() {
@@ -27,11 +27,12 @@ class _HomeState extends State<Home> {
     try {
       response = await Dio().get('https://jsonplaceholder.typicode.com/posts');
       if (response.statusCode == 200) {
-        print(response.data);
+        users = (json.decode(response.data) as List)
+            .map((i) => User.fromJson(i))
+            .toList();
 
         setState(() {
           user = User.fromJson(response.data);
-          //jsonList = response.data[''] as List;
         });
       } else {
         print(response.statusCode);
@@ -41,44 +42,18 @@ class _HomeState extends State<Home> {
     }
   }
 
-  // void getDate() async {
-  //    final dio = Dio(BaseOptions(
-  //     baseUrl: 'https://jsonplaceholder.typicode.com',
-  //     connectTimeout: 5000,
-  //     receiveTimeout: 3000,
-  //     headers: {'Authorization': 'Bearer 123456'},
-  //     contentType: 'application/json',
-  //   ));
-  // try {
-  //     response = await Dio().get('https://jsonplaceholder.typicode.com/posts');
-  //     if (response.statusCode == 200) {
-  //       print(response.data);
-
-  //       setState(() {
-  //         user = User.fromJson(response.data);
-  //         //jsonList = response.data[''] as List;
-  //       });
-  //     } else {
-  //       print(response.statusCode);
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: ListView.builder(
-          //padding: EdgeInsets.all(8),
-
+          itemCount: users.length,
           itemBuilder: (context, index) {
             return Card(
               child: ListTile(
                 title: Text(
-                    'id is ${user.id} userId is ${user.userId}  / title is ${user.title}'),
-                subtitle: Text('body is ${user.body}'),
+                    'id is ${users[index].id} userId is ${users[index].userId}  / title is ${users[index].title}'),
+                subtitle: Text('body is ${users[index].body}'),
               ),
             );
           },
